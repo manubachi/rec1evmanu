@@ -21,13 +21,7 @@ class CitasController extends Controller
     public function behaviors()
     {
         return [
-            'verbs' => [
-                'class' => VerbFilter::className(),
-                'actions' => [
-                    'delete' => ['POST'],
-                ],
-            ],
-            'access' => [
+            'access' => [ // REglas de acceso a la web. Solo pueden acceder a esas tres acciones los usuarios logueados
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
@@ -35,6 +29,9 @@ class CitasController extends Controller
                         'roles' => ['@'],
                     ],
                 ],
+            ],
+            'verbs' => [
+                'class' => VerbFilter::className(),
             ],
         ];
     }
@@ -75,21 +72,21 @@ class CitasController extends Controller
      * Creates a new Citas model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
+     * @param mixed $usuario_id
      */
-    public function actionCreate()
+    public function actionCreate($usuario_id)
     {
         if (!empty(Citas::anulables())) {
-            Yii::$app->session->setFlash('error', 'Ya tiene una cita pendiente.');
+            Yii::$app->session->setFlash('error', 'Ya tiene una cita pendiente');
             return $this->goHome();
         }
-
         $model = new Citas([
+            'usuario_id' => $usuario_id,
             'instante' => Citas::siguiente()->format('Y-m-d H:i:s'),
-            'usuario_id' => Yii::$app->user->id,
         ]);
 
         if (Yii::$app->request->isPost && $model->save()) {
-            return $this->goHome();
+            return $this->redirect(['view', 'id' => $model->id]);
         }
 
         return $this->render('create', [
